@@ -32,7 +32,7 @@ export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
 
   // Redirect unauthenticated users away from protected routes
-  if (!user && !pathname.startsWith('/login') && !pathname.startsWith('/register')) {
+  if (!user && !pathname.startsWith('/login') && !pathname.startsWith('/register') && pathname !== '/') {
     return NextResponse.redirect(new URL('/login', request.url))
   }
 
