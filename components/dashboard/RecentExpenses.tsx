@@ -1,6 +1,5 @@
 import { formatCurrency, formatDate } from '@/lib/utils'
 import { CATEGORY_COLORS, type Expense } from '@/types'
-import { Badge } from '@/components/ui/badge'
 import Link from 'next/link'
 import { ArrowRight } from 'lucide-react'
 

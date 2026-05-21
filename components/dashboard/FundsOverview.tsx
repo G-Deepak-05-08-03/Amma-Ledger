@@ -62,10 +62,12 @@ export function FundsOverview({ funds: propFunds }: FundsOverviewProps = {}) {
     setLoading(false)
   }, [supabase])
 
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     if (propFunds) return
     loadFunds()
   }, [loadFunds, propFunds])
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   if (loading) {
     return (
