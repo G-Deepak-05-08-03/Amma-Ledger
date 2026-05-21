@@ -8,6 +8,16 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
 import { FilterDropdown, FilterDropdownItem } from '@/components/ui/filter-dropdown'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
 import { ExpenseForm } from '@/components/expenses/ExpenseForm'
 import { formatCurrency, formatDate, MONTHS } from '@/lib/utils'
 import { EXPENSE_CATEGORIES, CATEGORY_COLORS, type Expense } from '@/types'
@@ -22,6 +32,8 @@ export default function ExpensesPage() {
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear())
   const [selectedCategory, setSelectedCategory] = useState<string>('All')
   const [search, setSearch] = useState('')
+  const [deleteId, setDeleteId] = useState<string | null>(null)
+  const [deleteLoading, setDeleteLoading] = useState(false)
 
   const fetchExpenses = useCallback(async () => {
     setLoading(true)
@@ -47,11 +59,14 @@ export default function ExpensesPage() {
 
   useEffect(() => { fetchExpenses() }, [fetchExpenses])
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('Delete this expense?')) return
-    const { error } = await supabase.from('expenses').delete().eq('id', id)
+  const handleDelete = async () => {
+    if (!deleteId) return
+    setDeleteLoading(true)
+    const { error } = await supabase.from('expenses').delete().eq('id', deleteId)
     if (error) toast.error('Failed to delete')
     else { toast.success('Expense deleted'); fetchExpenses() }
+    setDeleteLoading(false)
+    setDeleteId(null)
   }
 
   const filtered = expenses.filter(e =>
@@ -189,14 +204,16 @@ export default function ExpensesPage() {
               <div className="flex items-center gap-3 flex-shrink-0">
                 <span className="font-bold text-red-400">-{formatCurrency(expense.amount)}</span>
                 <button
+                  aria-label={`Edit ${expense.category} expense`}
                   onClick={() => { setEditData(expense); setFormOpen(true) }}
-                  className="p-1.5 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
+                  className="p-1.5 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                 >
                   <Pencil className="w-4 h-4" />
                 </button>
                 <button
-                  onClick={() => handleDelete(expense.id)}
-                  className="p-1.5 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+                  aria-label={`Delete ${expense.category} expense`}
+                  onClick={() => setDeleteId(expense.id)}
+                  className="p-1.5 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-destructive"
                 >
                   <Trash2 className="w-4 h-4" />
                 </button>
@@ -212,6 +229,27 @@ export default function ExpensesPage() {
         onSuccess={fetchExpenses}
         editData={editData}
       />
+
+      <AlertDialog open={!!deleteId} onOpenChange={(open) => { if (!open) setDeleteId(null) }}>
+        <AlertDialogContent className="bg-card border-border">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete expense?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleteLoading}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDelete}
+              disabled={deleteLoading}
+              className="bg-destructive hover:bg-destructive/90"
+            >
+              {deleteLoading ? 'Deleting...' : 'Delete'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }
