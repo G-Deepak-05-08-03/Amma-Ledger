@@ -8,6 +8,16 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import { FilterDropdown, FilterDropdownItem } from '@/components/ui/filter-dropdown'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
 import { SalaryForm } from '@/components/salary/SalaryForm'
 import { formatCurrency, formatDate, MONTHS } from '@/lib/utils'
 import type { Salary } from '@/types'
@@ -20,6 +30,8 @@ export default function SalaryPage() {
   const [editData, setEditData] = useState<Salary | null>(null)
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1)
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear())
+  const [deleteId, setDeleteId] = useState<string | null>(null)
+  const [deleteLoading, setDeleteLoading] = useState(false)
 
   const fetchSalaries = useCallback(async () => {
     setLoading(true)
@@ -38,11 +50,14 @@ export default function SalaryPage() {
 
   useEffect(() => { fetchSalaries() }, [fetchSalaries])
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('Delete this salary entry?')) return
-    const { error } = await supabase.from('salaries').delete().eq('id', id)
+  const handleDelete = async () => {
+    if (!deleteId) return
+    setDeleteLoading(true)
+    const { error } = await supabase.from('salaries').delete().eq('id', deleteId)
     if (error) toast.error('Failed to delete')
     else { toast.success('Salary deleted'); fetchSalaries() }
+    setDeleteLoading(false)
+    setDeleteId(null)
   }
 
   const totalSalary = salaries.reduce((s, r) => s + r.amount, 0)
@@ -117,14 +132,16 @@ export default function SalaryPage() {
                 </div>
                 <div className="flex gap-2">
                   <button
+                    aria-label={`Edit salary from ${salary.source}`}
                     onClick={() => { setEditData(salary); setFormOpen(true) }}
-                    className="p-2 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
+                    className="p-2 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                   >
                     <Pencil className="w-4 h-4" />
                   </button>
                   <button
-                    onClick={() => handleDelete(salary.id)}
-                    className="p-2 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+                    aria-label={`Delete salary from ${salary.source}`}
+                    onClick={() => setDeleteId(salary.id)}
+                    className="p-2 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-destructive"
                   >
                     <Trash2 className="w-4 h-4" />
                   </button>
@@ -154,6 +171,27 @@ export default function SalaryPage() {
         onSuccess={fetchSalaries}
         editData={editData}
       />
+
+      <AlertDialog open={!!deleteId} onOpenChange={(open) => { if (!open) setDeleteId(null) }}>
+        <AlertDialogContent className="bg-card border-border">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete salary entry?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will also remove all allocations linked to this salary entry. Cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleteLoading}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDelete}
+              disabled={deleteLoading}
+              className="bg-destructive hover:bg-destructive/90"
+            >
+              {deleteLoading ? 'Deleting...' : 'Delete'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }
