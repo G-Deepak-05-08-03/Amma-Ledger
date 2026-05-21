@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { Plus, Pencil, Trash2, ShoppingCart, Search, Filter } from 'lucide-react'
+import { Plus, Pencil, Trash2, ShoppingCart, Search } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
@@ -20,7 +20,7 @@ import {
 } from '@/components/ui/alert-dialog'
 import { ExpenseForm } from '@/components/expenses/ExpenseForm'
 import { formatCurrency, formatDate, MONTHS } from '@/lib/utils'
-import { EXPENSE_CATEGORIES, CATEGORY_COLORS, type Expense } from '@/types'
+import { EXPENSE_CATEGORIES, CATEGORY_COLORS, CATEGORY_ICONS, type Expense } from '@/types'
 
 export default function ExpensesPage() {
   const supabase = createClient()
@@ -110,17 +110,6 @@ export default function ExpensesPage() {
           ))}
         </FilterDropdown>
 
-        <FilterDropdown label={<span className="flex items-center gap-1"><Filter className="w-4 h-4" />{selectedCategory}</span>}>
-          <FilterDropdownItem onClick={() => setSelectedCategory('All')} active={selectedCategory === 'All'}>
-            All Categories
-          </FilterDropdownItem>
-          {EXPENSE_CATEGORIES.map(cat => (
-            <FilterDropdownItem key={cat} onClick={() => setSelectedCategory(cat)} active={selectedCategory === cat}>
-              {cat}
-            </FilterDropdownItem>
-          ))}
-        </FilterDropdown>
-
         <div className="relative flex-1 min-w-[200px]">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input
@@ -143,7 +132,7 @@ export default function ExpensesPage() {
       <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1">
         <button
           onClick={() => setSelectedCategory('All')}
-          className={`whitespace-nowrap px-3 py-1.5 rounded-full text-xs font-medium transition-all flex-shrink-0 ${
+          className={`whitespace-nowrap px-3 py-1.5 rounded-full text-xs font-medium transition-all flex-shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
             selectedCategory === 'All' ? 'bg-primary text-primary-foreground' : 'bg-muted/60 text-muted-foreground hover:text-foreground'
           }`}
         >
@@ -153,7 +142,7 @@ export default function ExpensesPage() {
           <button
             key={cat}
             onClick={() => setSelectedCategory(cat)}
-            className="whitespace-nowrap px-3 py-1.5 rounded-full text-xs font-medium transition-all flex-shrink-0 border"
+            className="whitespace-nowrap px-3 py-1.5 rounded-full text-xs font-medium transition-all flex-shrink-0 border cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
             style={selectedCategory === cat ? {
               background: CATEGORY_COLORS[cat as keyof typeof CATEGORY_COLORS],
               borderColor: CATEGORY_COLORS[cat as keyof typeof CATEGORY_COLORS],
@@ -187,12 +176,17 @@ export default function ExpensesPage() {
             <div key={expense.id}
               className="glass-card rounded-2xl px-5 py-4 flex items-center justify-between gap-4 transition-all hover:border-border">
               <div className="flex items-center gap-4 min-w-0">
-                <div
-                  className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 text-white text-xs font-bold"
-                  style={{ background: CATEGORY_COLORS[expense.category as keyof typeof CATEGORY_COLORS] || '#6b7280' }}
-                >
-                  {expense.category.slice(0, 2).toUpperCase()}
-                </div>
+                {(() => {
+                  const CategoryIcon = CATEGORY_ICONS[expense.category as keyof typeof CATEGORY_ICONS]
+                  return (
+                    <div
+                      className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+                      style={{ background: CATEGORY_COLORS[expense.category as keyof typeof CATEGORY_COLORS] || '#6b7280' }}
+                    >
+                      {CategoryIcon && <CategoryIcon className="w-5 h-5 text-white" />}
+                    </div>
+                  )
+                })()}
                 <div className="min-w-0">
                   <p className="font-medium text-sm">{expense.category}</p>
                   <p className="text-xs text-muted-foreground mt-0.5">
