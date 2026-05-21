@@ -5,8 +5,9 @@ import { StatCardsRow } from '@/components/dashboard/StatCards'
 import { ExpensePieChart, MonthlyTrendChart } from '@/components/dashboard/Charts'
 import { RecentExpenses } from '@/components/dashboard/RecentExpenses'
 import { FundsOverview } from '@/components/dashboard/FundsOverview'
-import { formatCurrency } from '@/lib/utils'
-import { CATEGORY_COLORS } from '@/types'
+import { FilterDropdown, FilterDropdownItem } from '@/components/ui/filter-dropdown'
+import { formatCurrency, MONTHS } from '@/lib/utils'
+import { CATEGORY_COLORS, SAVINGS_ALLOCATION_KEYWORDS } from '@/types'
 import { format, startOfMonth, endOfMonth, subMonths } from 'date-fns'
 import { TrendingUp, Loader2 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
@@ -15,6 +16,9 @@ import type { Expense } from '@/types'
 export default function DashboardPage() {
   const supabase = createClient()
   const [loading, setLoading] = useState(true)
+  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1)
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear())
+  const years = Array.from({ length: 3 }, (_, i) => new Date().getFullYear() - i)
   const [data, setData] = useState<{
     totalSalary: number
     totalExpenses: number
@@ -28,13 +32,11 @@ export default function DashboardPage() {
 
   const loadData = useCallback(async () => {
     setLoading(true)
-    const now = new Date()
+    const now = new Date(selectedYear, selectedMonth - 1, 1)
     const monthStart = format(startOfMonth(now), 'yyyy-MM-dd')
     const monthEnd = format(endOfMonth(now), 'yyyy-MM-dd')
     const sixMonthsAgoStart = format(startOfMonth(subMonths(now, 5)), 'yyyy-MM-dd')
 
-    // 1. Fetch current month full data for recent lists and allocations
-    // 2. Fetch last 6 months lightweight data for charts
     const [
       { data: salaries },
       { data: expenses },
@@ -50,7 +52,9 @@ export default function DashboardPage() {
     const totalSalary = (salaries || []).reduce((s: number, r: any) => s + r.amount, 0)
     const totalExpenses = (expenses || []).reduce((s: number, r: any) => s + r.amount, 0)
     const totalSavings = (salaries || []).reduce((s: number, r: any) => {
-      const savingsAlloc = (r.allocations || []).find((a: any) => a.allocated_to.toLowerCase().includes('saving'))
+      const savingsAlloc = (r.allocations || []).find((a: any) =>
+        SAVINGS_ALLOCATION_KEYWORDS.some(kw => a.allocated_to.toLowerCase().includes(kw))
+      )
       return s + (savingsAlloc ? savingsAlloc.amount : 0)
     }, 0)
 
@@ -93,7 +97,7 @@ export default function DashboardPage() {
       salaries: salaries || []
     })
     setLoading(false)
-  }, [supabase])
+  }, [supabase, selectedMonth, selectedYear])
 
   useEffect(() => { loadData() }, [loadData])
 
@@ -105,23 +109,37 @@ export default function DashboardPage() {
     )
   }
 
-  const now = new Date()
-
   return (
     <div className="space-y-6 animate-fade-in-up">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-3 flex-wrap">
         <div>
           <h1 className="text-2xl md:text-3xl font-bold">Dashboard</h1>
           <p className="text-muted-foreground text-sm mt-1">
-            {format(now, 'MMMM yyyy')} overview
+            {MONTHS[selectedMonth - 1]} {selectedYear} overview
           </p>
         </div>
-        <div className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-xl bg-muted/40 text-sm text-muted-foreground">
-          <TrendingUp className="w-4 h-4 text-emerald-400" />
-          <span>Savings rate: <strong className="text-emerald-400">
-            {data.totalSalary > 0 ? ((data.totalSavings / data.totalSalary) * 100).toFixed(0) : 0}%
-          </strong></span>
+        <div className="flex items-center gap-2 flex-wrap">
+          <FilterDropdown label={MONTHS[selectedMonth - 1]}>
+            {MONTHS.map((m, i) => (
+              <FilterDropdownItem key={m} onClick={() => setSelectedMonth(i + 1)} active={selectedMonth === i + 1}>
+                {m}
+              </FilterDropdownItem>
+            ))}
+          </FilterDropdown>
+          <FilterDropdown label={String(selectedYear)}>
+            {years.map(y => (
+              <FilterDropdownItem key={y} onClick={() => setSelectedYear(y)} active={selectedYear === y}>
+                {y}
+              </FilterDropdownItem>
+            ))}
+          </FilterDropdown>
+          <div className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-xl bg-muted/40 text-sm text-muted-foreground">
+            <TrendingUp className="w-4 h-4 text-emerald-400" />
+            <span>Savings rate: <strong className="text-emerald-400">
+              {data.totalSalary > 0 ? ((data.totalSavings / data.totalSalary) * 100).toFixed(0) : 0}%
+            </strong></span>
+          </div>
         </div>
       </div>
 

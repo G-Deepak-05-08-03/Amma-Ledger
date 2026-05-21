@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { FilterDropdown, FilterDropdownItem } from '@/components/ui/filter-dropdown'
 import { formatCurrency, formatDate, MONTHS } from '@/lib/utils'
-import { CATEGORY_COLORS, type Expense, type Salary } from '@/types'
+import { CATEGORY_COLORS, SAVINGS_ALLOCATION_KEYWORDS, type Expense, type Salary } from '@/types'
 
 interface ReportData {
   salaries: Salary[]
@@ -46,7 +46,9 @@ export default function ReportsPage() {
     const totalExpenses = expenses.reduce((acc: number, r: Expense) => acc + r.amount, 0)
     const totalSavings = salaries.reduce((acc: number, r: Salary) => {
       const allocs = (r.allocations || []) as { allocated_to: string; amount: number }[]
-      const savingsAlloc = allocs.find(a => a.allocated_to.toLowerCase().includes('saving'))
+      const savingsAlloc = allocs.find(a =>
+        SAVINGS_ALLOCATION_KEYWORDS.some(kw => a.allocated_to.toLowerCase().includes(kw))
+      )
       return acc + (savingsAlloc ? savingsAlloc.amount : 0)
     }, 0)
 
