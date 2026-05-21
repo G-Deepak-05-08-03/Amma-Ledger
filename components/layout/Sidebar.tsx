@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
+import { useEffect, useState } from 'react'
 import {
   LayoutDashboard,
   Wallet,
@@ -28,6 +29,19 @@ export function Sidebar() {
   const pathname = usePathname()
   const router = useRouter()
   const supabase = createClient()
+  const [userName, setUserName] = useState('')
+  const [userEmail, setUserEmail] = useState('')
+
+  useEffect(() => {
+    const loadUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return
+      setUserEmail(user.email || '')
+      const { data } = await supabase.from('profiles').select('name').eq('id', user.id).single()
+      if (data) setUserName(data.name)
+    }
+    loadUser()
+  }, [supabase])
 
   const handleSignOut = async () => {
     await supabase.auth.signOut()
@@ -73,8 +87,14 @@ export function Sidebar() {
         })}
       </nav>
 
-      {/* Sign out */}
-      <div className="px-3 pb-6 border-t border-border/50 pt-4">
+      {/* User + Sign out */}
+      <div className="px-3 pb-6 border-t border-border/50 pt-4 space-y-1">
+        {userName && (
+          <div className="px-4 py-2">
+            <p className="text-sm font-semibold text-foreground truncate">{userName}</p>
+            <p className="text-xs text-muted-foreground truncate">{userEmail}</p>
+          </div>
+        )}
         <button
           onClick={handleSignOut}
           className="flex items-center gap-3 w-full px-4 py-3 rounded-xl text-sm font-medium text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-all duration-200"
