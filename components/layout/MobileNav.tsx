@@ -25,6 +25,7 @@ export function MobileNav() {
             <Link
               key={href}
               href={href}
+              prefetch={true}
               className={`flex flex-col items-center justify-center gap-1 min-w-[52px] py-2 transition-all duration-200 ${
                 isActive ? 'mobile-nav-active' : 'text-muted-foreground'
               }`}
