@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutDashboard, IndianRupee, ShoppingCart, PiggyBank, FileText } from 'lucide-react'
+import { LayoutDashboard, IndianRupee, ShoppingCart, PiggyBank, FileText, Settings } from 'lucide-react'
 
 const navItems = [
   { href: '/dashboard', icon: LayoutDashboard, label: 'Home' },
@@ -10,6 +10,7 @@ const navItems = [
   { href: '/dashboard/expenses', icon: ShoppingCart, label: 'Expenses' },
   { href: '/dashboard/funds', icon: PiggyBank, label: 'Funds' },
   { href: '/dashboard/reports', icon: FileText, label: 'Reports' },
+  { href: '/dashboard/settings', icon: Settings, label: 'Settings' },
 ]
 
 export function MobileNav() {
