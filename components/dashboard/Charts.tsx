@@ -2,7 +2,7 @@
 
 import {
   PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer,
-  BarChart, Bar, XAxis, YAxis, CartesianGrid,
+  AreaChart, Area, XAxis, YAxis, CartesianGrid,
 } from 'recharts'
 import { formatCurrency } from '@/lib/utils'
 import type { MonthlySummary } from '@/types'
@@ -100,7 +100,21 @@ export function MonthlyTrendChart({ data }: TrendChartProps) {
 
   return (
     <ResponsiveContainer width="100%" height={260}>
-      <BarChart data={chartData} barGap={4} barSize={18}>
+      <AreaChart data={chartData} margin={{ top: 4, right: 4, bottom: 0, left: 0 }}>
+        <defs>
+          <linearGradient id="gradSalary" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="5%" stopColor="hsl(30,95%,55%)" stopOpacity={0.3} />
+            <stop offset="95%" stopColor="hsl(30,95%,55%)" stopOpacity={0} />
+          </linearGradient>
+          <linearGradient id="gradExpenses" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="5%" stopColor="hsl(0,72%,51%)" stopOpacity={0.3} />
+            <stop offset="95%" stopColor="hsl(0,72%,51%)" stopOpacity={0} />
+          </linearGradient>
+          <linearGradient id="gradSavings" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="5%" stopColor="hsl(160,84%,39%)" stopOpacity={0.3} />
+            <stop offset="95%" stopColor="hsl(160,84%,39%)" stopOpacity={0} />
+          </linearGradient>
+        </defs>
         <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" vertical={false} />
         <XAxis
           dataKey="month"
@@ -113,6 +127,7 @@ export function MonthlyTrendChart({ data }: TrendChartProps) {
           axisLine={false}
           tickLine={false}
           tickFormatter={(v) => `₹${(v / 1000).toFixed(0)}k`}
+          width={48}
         />
         <Tooltip content={<BarTooltip />} />
         <Legend
@@ -120,10 +135,10 @@ export function MonthlyTrendChart({ data }: TrendChartProps) {
           iconSize={8}
           formatter={(value) => <span className="text-muted-foreground text-xs">{value}</span>}
         />
-        <Bar dataKey="Salary" fill="hsl(30,95%,55%)" radius={[4,4,0,0]} />
-        <Bar dataKey="Expenses" fill="hsl(0,72%,51%)" radius={[4,4,0,0]} />
-        <Bar dataKey="Savings" fill="hsl(160,84%,39%)" radius={[4,4,0,0]} />
-      </BarChart>
+        <Area type="monotone" dataKey="Salary" stroke="hsl(30,95%,55%)" strokeWidth={2} fill="url(#gradSalary)" dot={false} />
+        <Area type="monotone" dataKey="Expenses" stroke="hsl(0,72%,51%)" strokeWidth={2} fill="url(#gradExpenses)" dot={false} />
+        <Area type="monotone" dataKey="Savings" stroke="hsl(160,84%,39%)" strokeWidth={2} fill="url(#gradSavings)" dot={false} />
+      </AreaChart>
     </ResponsiveContainer>
   )
 }

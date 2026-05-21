@@ -37,7 +37,7 @@ const variantConfig = {
 export function StatCard({ title, value, icon: Icon, variant, subtitle }: StatCardProps) {
   const config = variantConfig[variant]
   return (
-    <div className={`rounded-2xl p-5 transition-transform hover:scale-[1.02] duration-200 ${config.className}`}>
+    <div className={`rounded-2xl p-5 transition-colors duration-200 hover:brightness-110 ${config.className}`}>
       <div className="flex items-start justify-between mb-3">
         <div>
           <p className="text-muted-foreground text-sm font-medium">{title}</p>

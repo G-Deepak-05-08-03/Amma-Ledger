@@ -114,7 +114,7 @@ export default function FundsPage() {
       </div>
 
       {/* Summary cards */}
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         {[
           { label: 'Total Allocated', value: totalAllocated, icon: TrendingUp, color: 'text-orange-400', gradient: 'hsl(30,95%,55%), hsl(45,100%,65%)' },
           { label: 'Spent from Funds', value: totalSpent, icon: TrendingDown, color: 'text-red-400', gradient: 'hsl(0,84%,60%), hsl(15,90%,55%)' },
@@ -128,7 +128,7 @@ export default function FundsPage() {
               <Icon className="w-4 h-4 text-white" />
             </div>
             <p className="text-muted-foreground text-xs">{label}</p>
-            <p className={`text-xl font-bold mt-0.5 ${color}`}>{formatCurrency(value)}</p>
+            <p className={`text-lg font-bold mt-0.5 truncate ${color}`}>{formatCurrency(value)}</p>
           </div>
         ))}
       </div>

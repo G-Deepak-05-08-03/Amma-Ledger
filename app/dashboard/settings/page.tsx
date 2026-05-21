@@ -5,7 +5,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
 import { toast } from 'sonner'
-import { Save, User, Wallet, ExternalLink } from 'lucide-react'
+import { Save, User, Wallet, ExternalLink, ClipboardList } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -129,7 +129,10 @@ export default function SettingsPage() {
       {/* Supabase SQL setup hint */}
       <div className="rounded-2xl p-5 border"
         style={{ background: 'rgba(249,115,22,0.06)', borderColor: 'rgba(249,115,22,0.2)' }}>
-        <h3 className="font-semibold text-sm text-orange-400 mb-2">📋 Database Setup Required</h3>
+        <h3 className="font-semibold text-sm text-orange-400 mb-2 flex items-center gap-2">
+          <ClipboardList className="w-4 h-4" />
+          Database Setup Required
+        </h3>
         <p className="text-xs text-muted-foreground mb-3">
           Run the SQL migration in your Supabase project dashboard to create the required tables.
           Find the migration file at <code className="text-orange-300">supabase/migration.sql</code> in the project.
