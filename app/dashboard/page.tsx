@@ -16,9 +16,20 @@ import type { Expense, Salary } from '@/types'
 export default function DashboardPage() {
   const supabase = createClient()
   const [loading, setLoading] = useState(true)
+  const [userName, setUserName] = useState('')
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1)
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear())
   const years = Array.from({ length: 3 }, (_, i) => new Date().getFullYear() - i)
+
+  useEffect(() => {
+    const loadUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return
+      const { data } = await supabase.from('profiles').select('name').eq('id', user.id).single()
+      if (data) setUserName(data.name)
+    }
+    loadUser()
+  }, [supabase])
   const [data, setData] = useState<{
     totalSalary: number
     totalExpenses: number
@@ -134,7 +145,9 @@ export default function DashboardPage() {
       {/* Header */}
       <div className="flex items-center justify-between gap-3 flex-wrap">
         <div>
-          <h1 className="text-2xl md:text-3xl font-bold">Dashboard</h1>
+          <h1 className="text-2xl md:text-3xl font-bold">
+            {userName ? `Welcome, ${userName.split(' ')[0]}` : 'Dashboard'}
+          </h1>
           <p className="text-muted-foreground text-sm mt-1">
             {MONTHS[selectedMonth - 1]} {selectedYear} overview
           </p>

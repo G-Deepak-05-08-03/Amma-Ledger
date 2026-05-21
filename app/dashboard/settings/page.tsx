@@ -6,7 +6,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
 import { toast } from 'sonner'
-import { Save, User, Wallet, ExternalLink, ClipboardList, LogOut } from 'lucide-react'
+import { Save, User, Wallet, LogOut } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -135,27 +135,6 @@ export default function SettingsPage() {
             <span className="text-foreground font-medium">Indian Rupee (₹ INR)</span>
           </div>
         </div>
-      </div>
-
-      {/* Supabase SQL setup hint */}
-      <div className="rounded-2xl p-5 border"
-        style={{ background: 'rgba(249,115,22,0.06)', borderColor: 'rgba(249,115,22,0.2)' }}>
-        <h3 className="font-semibold text-sm text-orange-400 mb-2 flex items-center gap-2">
-          <ClipboardList className="w-4 h-4" />
-          Database Setup Required
-        </h3>
-        <p className="text-xs text-muted-foreground mb-3">
-          Run the SQL migration in your Supabase project dashboard to create the required tables.
-          Find the migration file at <code className="text-orange-300">supabase/migration.sql</code> in the project.
-        </p>
-        <a
-          href="https://supabase.com/dashboard"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex items-center gap-1.5 text-xs text-primary hover:underline"
-        >
-          Open Supabase Dashboard <ExternalLink className="w-3 h-3" />
-        </a>
       </div>
 
       {/* Sign Out */}
