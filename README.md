@@ -1,36 +1,61 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# AmmaLedger 📒
 
-## Getting Started
+**AmmaLedger** is a beautifully designed, mobile-first family finance manager. Built specifically to be simple, elder-friendly, and highly visual, it helps track monthly salaries, manage distinct savings funds, and monitor daily household expenses seamlessly.
 
-First, run the development server:
+![AmmaLedger Dashboard Overview](https://via.placeholder.com/1200x630/0f172a/f97316?text=AmmaLedger+-+Family+Finance+Manager)
 
+## ✨ Key Features
+
+* **📱 Mobile-First & Elder-Friendly:** Large touch targets, intuitive bottom navigation, and high-contrast typography designed for effortless use on smartphones.
+* **💰 Intelligent Salary Allocation:** Whenever a salary is added, easily divide it into dedicated buckets (e.g., Savings, Household Balance, Personal Fund).
+* **🏦 Fund Tracking:** A dedicated funds dashboard to see cumulative allocated amounts, total withdrawals, and the live available balance for each bucket.
+* **🛍️ Expense Categorization:** Quickly log expenses and deduct them from specific funds with visual, color-coded categories.
+* **📊 Visual Insights:** Interactive pie charts for spending breakdown and a 6-month bar chart trend analysis to track savings growth.
+* **📄 One-Click Reports:** Generate and download monthly financial reports in both PDF and Excel formats.
+* **🔒 Secure by Default:** Fully authenticated system backed by Supabase with Row Level Security (RLS) ensuring your financial data is private.
+
+## 🛠️ Tech Stack
+
+* **Frontend:** [Next.js 16](https://nextjs.org/) (App Router), React 19, TypeScript
+* **Styling:** Tailwind CSS, custom vanilla CSS (glassmorphism UI, saffron-orange gradients)
+* **Components:** [shadcn/ui](https://ui.shadcn.com/), Lucide Icons
+* **Charts:** Recharts
+* **Backend & Database:** [Supabase](https://supabase.com/) (PostgreSQL, GoTrue Auth)
+* **Forms & Validation:** React Hook Form, Zod
+
+## 🚀 Quick Start (Local Development)
+
+### 1. Clone the repository
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+git clone https://github.com/yourusername/ammaledger.git
+cd ammaledger
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 2. Install dependencies
+```bash
+npm install
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### 3. Configure Supabase Environment
+Create a `.env.local` file in the root directory:
+```env
+NEXT_PUBLIC_SUPABASE_URL=https://your-project-id.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-public-key
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### 4. Run the Database Migration
+Run the SQL script located at `supabase/migration.sql` in your Supabase project's SQL Editor to create the necessary tables (`profiles`, `salaries`, `allocations`, `expenses`) and security policies.
 
-## Learn More
+### 5. Start the Dev Server
+```bash
+npm run dev
+```
+Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
 
-To learn more about Next.js, take a look at the following resources:
+## 📦 Deployment
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+AmmaLedger is optimized for deployment on **Vercel**. 
+Simply import your GitHub repository into Vercel, add the Supabase environment variables, and hit deploy. Next.js server-side features and middleware will be automatically configured.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+---
+*Designed with ❤️ for family finance management.*

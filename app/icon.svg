@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">
+  <defs>
+    <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#f97316" /> <!-- Saffron Orange -->
+      <stop offset="100%" stop-color="#fbbf24" /> <!-- Golden Yellow -->
+    </linearGradient>
+  </defs>
+  
+  <!-- Rounded Square Background -->
+  <rect x="16" y="16" width="224" height="224" rx="48" fill="url(#grad)" />
+  
+  <!-- Wallet Icon Base -->
+  <path d="M64 88C64 74.7452 74.7452 64 88 64H184C197.255 64 208 74.7452 208 88V168C208 181.255 197.255 192 184 192H88C74.7452 192 64 181.255 64 168V88Z" fill="#ffffff" />
+  
+  <!-- Wallet Flap/Accent -->
+  <path d="M64 112L152 112C165.255 112 176 122.745 176 136V144C176 157.255 165.255 168 152 168L64 168" fill="#fef3c7" opacity="0.9" />
+  
+  <!-- Indian Rupee Symbol inside wallet -->
+  <path d="M120 100H140V110H120M120 120H140V130H120L140 160H125L108 130V120H110M110 100V110H108V100H110Z" fill="#f97316" />
+</svg>
