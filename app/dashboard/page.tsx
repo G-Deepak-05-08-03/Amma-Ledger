@@ -28,6 +28,7 @@ export default function DashboardPage() {
     monthlyTrend: { month: string; year: number; total_salary: number; total_expenses: number; total_savings: number; balance: number }[]
     recentExpenses: Expense[]
     salaries: any[]
+    fundBalances: { name: string; total_allocated: number; total_spent: number; available: number }[]
   } | null>(null)
 
   const loadData = useCallback(async () => {
@@ -86,6 +87,21 @@ export default function DashboardPage() {
       })
     }
 
+    const allocated: Record<string, number> = {}
+    const spent: Record<string, number> = {}
+    ;(salaries || []).flatMap((s: any) => s.allocations || []).forEach((a: any) => {
+      allocated[a.allocated_to] = (allocated[a.allocated_to] || 0) + a.amount
+    })
+    ;(expenses || []).forEach((e: any) => {
+      if (e.source_fund) spent[e.source_fund] = (spent[e.source_fund] || 0) + e.amount
+    })
+    const fundBalances = Object.keys(allocated).map(name => ({
+      name,
+      total_allocated: allocated[name],
+      total_spent: spent[name] || 0,
+      available: allocated[name] - (spent[name] || 0),
+    })).sort((a, b) => b.available - a.available)
+
     setData({
       totalSalary,
       totalExpenses,
@@ -94,7 +110,8 @@ export default function DashboardPage() {
       expensesByCategory,
       monthlyTrend,
       recentExpenses: (expenses || []).slice(0, 6) as Expense[],
-      salaries: salaries || []
+      salaries: salaries || [],
+      fundBalances,
     })
     setLoading(false)
   }, [supabase, selectedMonth, selectedYear])
@@ -187,7 +204,7 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      <FundsOverview />
+      <FundsOverview funds={data.fundBalances} />
     </div>
   )
 }

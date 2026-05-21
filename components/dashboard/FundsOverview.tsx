@@ -6,10 +6,14 @@ import { createClient } from '@/lib/supabase/client'
 import { formatCurrency } from '@/lib/utils'
 import type { FundBalance } from '@/types'
 
-export function FundsOverview() {
+interface FundsOverviewProps {
+  funds?: FundBalance[]
+}
+
+export function FundsOverview({ funds: propFunds }: FundsOverviewProps = {}) {
   const supabase = createClient()
-  const [funds, setFunds] = useState<FundBalance[]>([])
-  const [loading, setLoading] = useState(true)
+  const [funds, setFunds] = useState<FundBalance[]>(propFunds ?? [])
+  const [loading, setLoading] = useState(!propFunds)
 
   const loadFunds = useCallback(async () => {
     setLoading(true)
@@ -58,7 +62,10 @@ export function FundsOverview() {
     setLoading(false)
   }, [supabase])
 
-  useEffect(() => { loadFunds() }, [loadFunds])
+  useEffect(() => {
+    if (propFunds) return
+    loadFunds()
+  }, [loadFunds, propFunds])
 
   if (loading) {
     return (
