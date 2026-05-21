@@ -1,3 +1,17 @@
+import type { LucideIcon } from 'lucide-react'
+import {
+  ShoppingCart,
+  Home,
+  Zap,
+  Droplets,
+  Wifi,
+  Car,
+  HeartPulse,
+  ShoppingBag,
+  User,
+  MoreHorizontal,
+} from 'lucide-react'
+
 export type UserRole = 'admin' | 'member'
 
 export interface Profile {
@@ -100,3 +114,19 @@ export interface DashboardData {
   monthlyTrend: MonthlySummary[]
   expensesByCategory: { category: string; amount: number; color: string }[]
 }
+
+export const CATEGORY_ICONS: Record<ExpenseCategory, LucideIcon> = {
+  Groceries:     ShoppingCart,
+  Rent:          Home,
+  Electricity:   Zap,
+  Water:         Droplets,
+  WiFi:          Wifi,
+  Travel:        Car,
+  Medical:       HeartPulse,
+  Shopping:      ShoppingBag,
+  Personal:      User,
+  Miscellaneous: MoreHorizontal,
+}
+
+/** Allocation names containing any of these keywords are treated as savings */
+export const SAVINGS_ALLOCATION_KEYWORDS = ['saving', 'savings'] as const
