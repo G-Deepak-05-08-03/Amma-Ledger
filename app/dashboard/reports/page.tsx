@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect, useRef } from 'react'
 import { FileText, Download, FileSpreadsheet } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
@@ -27,6 +27,7 @@ export default function ReportsPage() {
   const [report, setReport] = useState<ReportData | null>(null)
   const [loading, setLoading] = useState(false)
   const years = Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - i)
+  const hasUserSelected = useRef(false)
 
   const generateReport = useCallback(async () => {
     setLoading(true)
@@ -70,6 +71,20 @@ export default function ReportsPage() {
     })
     setLoading(false)
   }, [selectedMonth, selectedYear, supabase])
+
+  useEffect(() => {
+    if (!hasUserSelected.current) return
+    generateReport()
+  }, [selectedMonth, selectedYear, generateReport])
+
+  const handleMonthChange = (month: number) => {
+    hasUserSelected.current = true
+    setSelectedMonth(month)
+  }
+  const handleYearChange = (year: number) => {
+    hasUserSelected.current = true
+    setSelectedYear(year)
+  }
 
   const exportPDF = async () => {
     if (!report) return
@@ -163,7 +178,7 @@ export default function ReportsPage() {
       <div className="glass-card rounded-2xl p-5 flex flex-wrap items-center gap-4">
         <FilterDropdown label={MONTHS[selectedMonth - 1]} className="min-w-[140px]">
           {MONTHS.map((m, i) => (
-            <FilterDropdownItem key={m} onClick={() => setSelectedMonth(i + 1)} active={selectedMonth === i + 1}>
+            <FilterDropdownItem key={m} onClick={() => handleMonthChange(i + 1)} active={selectedMonth === i + 1}>
               {m}
             </FilterDropdownItem>
           ))}
@@ -171,7 +186,7 @@ export default function ReportsPage() {
 
         <FilterDropdown label={String(selectedYear)}>
           {years.map(y => (
-            <FilterDropdownItem key={y} onClick={() => setSelectedYear(y)} active={selectedYear === y}>
+            <FilterDropdownItem key={y} onClick={() => handleYearChange(y)} active={selectedYear === y}>
               {y}
             </FilterDropdownItem>
           ))}
@@ -207,6 +222,9 @@ export default function ReportsPage() {
 
       {report && !loading && (
         <div className="space-y-6">
+          <p className="text-sm text-muted-foreground -mt-2">
+            Showing report for <strong className="text-foreground">{MONTHS[selectedMonth - 1]} {selectedYear}</strong>
+          </p>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
             {[
               { label: 'Total Salary', value: report.totalSalary, color: 'text-orange-400' },
