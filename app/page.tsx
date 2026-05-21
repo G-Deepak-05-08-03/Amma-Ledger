@@ -1,6 +1,5 @@
 import Link from 'next/link'
 import { Wallet, PieChart, ShieldCheck, PiggyBank, ArrowRight, IndianRupee } from 'lucide-react'
-import { Button } from '@/components/ui/button'
 
 export default function LandingPage() {
   return (
@@ -105,7 +104,7 @@ export default function LandingPage() {
             </div>
             
             <div className="mt-8 p-4 rounded-2xl bg-gradient-to-r from-primary/10 to-transparent border-l-2 border-primary">
-              <p className="text-sm">"Finally, a finance app simple enough for the whole family to use."</p>
+              <p className="text-sm">&ldquo;Finally, a finance app simple enough for the whole family to use.&rdquo;</p>
             </div>
           </div>
 

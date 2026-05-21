@@ -11,7 +11,7 @@ import { CATEGORY_COLORS, SAVINGS_ALLOCATION_KEYWORDS } from '@/types'
 import { format, startOfMonth, endOfMonth, subMonths } from 'date-fns'
 import { TrendingUp, Loader2 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
-import type { Expense } from '@/types'
+import type { Expense, Salary } from '@/types'
 
 export default function DashboardPage() {
   const supabase = createClient()
@@ -27,7 +27,7 @@ export default function DashboardPage() {
     expensesByCategory: { category: string; amount: number; color: string }[]
     monthlyTrend: { month: string; year: number; total_salary: number; total_expenses: number; total_savings: number; balance: number }[]
     recentExpenses: Expense[]
-    salaries: any[]
+    salaries: Salary[]
     fundBalances: { name: string; total_allocated: number; total_spent: number; available: number }[]
   } | null>(null)
 
@@ -50,17 +50,17 @@ export default function DashboardPage() {
       supabase.from('expenses').select('amount, expense_date').gte('expense_date', sixMonthsAgoStart).lte('expense_date', monthEnd)
     ])
 
-    const totalSalary = (salaries || []).reduce((s: number, r: any) => s + r.amount, 0)
-    const totalExpenses = (expenses || []).reduce((s: number, r: any) => s + r.amount, 0)
-    const totalSavings = (salaries || []).reduce((s: number, r: any) => {
-      const savingsAlloc = (r.allocations || []).find((a: any) =>
+    const totalSalary = (salaries || []).reduce((s: number, r: Salary) => s + r.amount, 0)
+    const totalExpenses = (expenses || []).reduce((s: number, r: Expense) => s + r.amount, 0)
+    const totalSavings = (salaries || []).reduce((s: number, r: Salary) => {
+      const savingsAlloc = (r.allocations || []).find((a: { allocated_to: string; amount: number }) =>
         SAVINGS_ALLOCATION_KEYWORDS.some(kw => a.allocated_to.toLowerCase().includes(kw))
       )
       return s + (savingsAlloc ? savingsAlloc.amount : 0)
     }, 0)
 
     const categoryMap: Record<string, number> = {}
-    ;(expenses || []).forEach((e: any) => {
+    ;(expenses || []).forEach((e: { category: string; amount: number }) => {
       categoryMap[e.category] = (categoryMap[e.category] || 0) + e.amount
     })
     const expensesByCategory = Object.entries(categoryMap).map(([category, amount]) => ({
@@ -73,10 +73,10 @@ export default function DashboardPage() {
     for (let i = 5; i >= 0; i--) {
       const d = subMonths(now, i)
       const currentMonthLabel = format(d, 'yyyy-MM')
-      const mSalaries = (allMSalaries || []).filter((s: any) => s.received_date.startsWith(currentMonthLabel))
-      const mExpenses = (allMExpenses || []).filter((e: any) => e.expense_date.startsWith(currentMonthLabel))
-      const ms = mSalaries.reduce((s: number, r: any) => s + r.amount, 0)
-      const me = mExpenses.reduce((s: number, r: any) => s + r.amount, 0)
+      const mSalaries = (allMSalaries || []).filter((s: { received_date: string; amount: number }) => s.received_date.startsWith(currentMonthLabel))
+      const mExpenses = (allMExpenses || []).filter((e: { expense_date: string; amount: number }) => e.expense_date.startsWith(currentMonthLabel))
+      const ms = mSalaries.reduce((s: number, r: { amount: number }) => s + r.amount, 0)
+      const me = mExpenses.reduce((s: number, r: { amount: number }) => s + r.amount, 0)
       monthlyTrend.push({
         month: format(d, 'MMM'),
         year: d.getFullYear(),
@@ -89,10 +89,12 @@ export default function DashboardPage() {
 
     const allocated: Record<string, number> = {}
     const spent: Record<string, number> = {}
-    ;(salaries || []).flatMap((s: any) => s.allocations || []).forEach((a: any) => {
-      allocated[a.allocated_to] = (allocated[a.allocated_to] || 0) + a.amount
-    })
-    ;(expenses || []).forEach((e: any) => {
+    ;(salaries || [])
+      .flatMap((s: { allocations?: { allocated_to: string; amount: number }[] }) => s.allocations || [])
+      .forEach((a: { allocated_to: string; amount: number }) => {
+        allocated[a.allocated_to] = (allocated[a.allocated_to] || 0) + a.amount
+      })
+    ;(expenses || []).forEach((e: { source_fund?: string | null; amount: number }) => {
       if (e.source_fund) spent[e.source_fund] = (spent[e.source_fund] || 0) + e.amount
     })
     const fundBalances = Object.keys(allocated).map(name => ({
@@ -116,6 +118,7 @@ export default function DashboardPage() {
     setLoading(false)
   }, [supabase, selectedMonth, selectedYear])
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { loadData() }, [loadData])
 
   if (loading || !data) {
@@ -188,7 +191,7 @@ export default function DashboardPage() {
             <p className="text-muted-foreground text-sm">No salary recorded this month</p>
           ) : (
             <div className="space-y-3">
-              {data.salaries.flatMap((s: any) => s.allocations || []).map((a: any) => (
+              {data.salaries.flatMap((s: { allocations?: { id: string; allocated_to: string; amount: number }[] }) => s.allocations || []).map((a: { id: string; allocated_to: string; amount: number }) => (
                 <div key={a.id} className="flex items-center justify-between py-2 border-b border-border/40 last:border-0">
                   <span className="text-sm text-muted-foreground">{a.allocated_to}</span>
                   <span className="font-semibold text-sm">{formatCurrency(a.amount)}</span>

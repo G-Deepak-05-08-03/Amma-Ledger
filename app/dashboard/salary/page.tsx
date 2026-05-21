@@ -48,6 +48,7 @@ export default function SalaryPage() {
     setLoading(false)
   }, [selectedMonth, selectedYear, supabase])
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { fetchSalaries() }, [fetchSalaries])
 
   const handleDelete = async () => {

@@ -57,6 +57,7 @@ export default function ExpensesPage() {
     setLoading(false)
   }, [selectedMonth, selectedYear, selectedCategory, supabase])
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { fetchExpenses() }, [fetchExpenses])
 
   const handleDelete = async () => {
