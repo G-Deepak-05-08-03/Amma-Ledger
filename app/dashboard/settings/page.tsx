@@ -6,7 +6,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
 import { toast } from 'sonner'
-import { Save, User, Wallet, LogOut } from 'lucide-react'
+import { Save, User, LogOut } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -111,30 +111,6 @@ export default function SettingsPage() {
             </Button>
           </form>
         )}
-      </div>
-
-      {/* App info */}
-      <div className="glass-card rounded-2xl p-6">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="w-10 h-10 rounded-xl bg-primary/20 flex items-center justify-center">
-            <Wallet className="w-5 h-5 text-primary" />
-          </div>
-          <h2 className="font-semibold">About AmmaLedger</h2>
-        </div>
-        <div className="space-y-3 text-sm text-muted-foreground">
-          <div className="flex justify-between">
-            <span>Version</span>
-            <span className="text-foreground font-medium">1.0.0 MVP</span>
-          </div>
-          <div className="flex justify-between">
-            <span>Database</span>
-            <span className="text-foreground font-medium">Supabase PostgreSQL</span>
-          </div>
-          <div className="flex justify-between">
-            <span>Currency</span>
-            <span className="text-foreground font-medium">Indian Rupee (₹ INR)</span>
-          </div>
-        </div>
       </div>
 
       {/* Sign Out */}
