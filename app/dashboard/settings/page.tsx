@@ -1,11 +1,12 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
 import { toast } from 'sonner'
-import { Save, User, Wallet, ExternalLink, ClipboardList } from 'lucide-react'
+import { Save, User, Wallet, ExternalLink, ClipboardList, LogOut } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -19,9 +20,19 @@ type FormData = z.infer<typeof schema>
 
 export default function SettingsPage() {
   const supabase = createClient()
+  const router = useRouter()
   const [loading, setLoading] = useState(false)
+  const [signOutLoading, setSignOutLoading] = useState(false)
   const [profileLoading, setProfileLoading] = useState(true)
   const [userEmail, setUserEmail] = useState('')
+
+  const handleSignOut = async () => {
+    setSignOutLoading(true)
+    await supabase.auth.signOut()
+    toast.success('Signed out')
+    router.push('/login')
+    router.refresh()
+  }
 
   const { register, handleSubmit, setValue, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(schema),
@@ -145,6 +156,25 @@ export default function SettingsPage() {
         >
           Open Supabase Dashboard <ExternalLink className="w-3 h-3" />
         </a>
+      </div>
+
+      {/* Sign Out */}
+      <div className="glass-card rounded-2xl p-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="font-semibold text-sm">Sign Out</p>
+            <p className="text-xs text-muted-foreground mt-0.5">{userEmail}</p>
+          </div>
+          <Button
+            variant="outline"
+            onClick={handleSignOut}
+            disabled={signOutLoading}
+            className="h-10 gap-2 text-destructive border-destructive/30 hover:bg-destructive/10 hover:text-destructive"
+          >
+            <LogOut className="w-4 h-4" />
+            {signOutLoading ? 'Signing out...' : 'Sign Out'}
+          </Button>
+        </div>
       </div>
     </div>
   )

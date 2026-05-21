@@ -21,11 +21,11 @@ export default function LandingPage() {
           </div>
           <span className="font-bold text-xl tracking-tight gradient-text">AmmaLedger</span>
         </div>
-        <div className="flex items-center gap-4">
-          <Link href="/login" className="text-sm font-medium hover:text-primary transition-colors">
+        <div className="flex items-center gap-3">
+          <Link href="/login" className="hidden sm:inline text-sm font-medium text-muted-foreground hover:text-primary transition-colors">
             Sign In
           </Link>
-          <Link href="/register" className="inline-flex items-center justify-center rounded-full px-6 py-2.5 text-sm font-semibold shadow-lg shadow-primary/20 glow-saffron transition-all hover:scale-105 text-white"
+          <Link href="/register" className="inline-flex items-center justify-center rounded-full px-5 py-2.5 text-sm font-semibold transition-colors text-white"
             style={{ background: 'linear-gradient(135deg, hsl(30,95%,55%), hsl(45,100%,65%))' }}>
             Get Started
           </Link>
