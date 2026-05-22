@@ -2,6 +2,7 @@
 
 import { TrendingUp, TrendingDown, PiggyBank, Wallet, type LucideIcon } from 'lucide-react'
 import { formatCurrency } from '@/lib/utils'
+import { useTranslation } from '@/lib/i18n/useTranslation'
 
 interface StatCardProps {
   title: string
@@ -62,12 +63,13 @@ interface StatCardsRowProps {
 }
 
 export function StatCardsRow({ totalSalary, totalExpenses, totalSavings, balance }: StatCardsRowProps) {
+  const t = useTranslation()
   return (
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-      <StatCard title="This Month's Salary" value={totalSalary} icon={Wallet} variant="salary" />
-      <StatCard title="Total Expenses" value={totalExpenses} icon={TrendingDown} variant="expense" />
-      <StatCard title="Savings" value={totalSavings} icon={PiggyBank} variant="savings" />
-      <StatCard title="Balance" value={balance} icon={TrendingUp} variant="balance" />
+      <StatCard title={t.stats.salary} value={totalSalary} icon={Wallet} variant="salary" />
+      <StatCard title={t.stats.expenses} value={totalExpenses} icon={TrendingDown} variant="expense" />
+      <StatCard title={t.stats.savings} value={totalSavings} icon={PiggyBank} variant="savings" />
+      <StatCard title={t.stats.balance} value={balance} icon={TrendingUp} variant="balance" />
     </div>
   )
 }

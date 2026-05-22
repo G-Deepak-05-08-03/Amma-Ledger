@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import {
   LayoutDashboard,
   Wallet,
@@ -15,37 +15,42 @@ import {
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
-
-const navItems = [
-  { href: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-  { href: '/dashboard/salary', icon: IndianRupee, label: 'Salary' },
-  { href: '/dashboard/expenses', icon: ShoppingCart, label: 'Expenses' },
-  { href: '/dashboard/funds', icon: PiggyBank, label: 'Funds' },
-  { href: '/dashboard/reports', icon: FileText, label: 'Reports' },
-  { href: '/dashboard/settings', icon: Settings, label: 'Settings' },
-]
+import { useAppStore } from '@/store/useStore'
+import { useTranslation } from '@/lib/i18n/useTranslation'
 
 export function Sidebar() {
   const pathname = usePathname()
   const router = useRouter()
   const supabase = createClient()
-  const [userName, setUserName] = useState('')
-  const [userEmail, setUserEmail] = useState('')
+  const t = useTranslation()
+
+  const userName = useAppStore((s) => s.userName)
+  const userEmail = useAppStore((s) => s.userEmail)
+  const setUserProfile = useAppStore((s) => s.setUserProfile)
+
+  const navItems = [
+    { href: '/dashboard', icon: LayoutDashboard, label: t.nav.dashboard },
+    { href: '/dashboard/salary', icon: IndianRupee, label: t.nav.salary },
+    { href: '/dashboard/expenses', icon: ShoppingCart, label: t.nav.expenses },
+    { href: '/dashboard/funds', icon: PiggyBank, label: t.nav.funds },
+    { href: '/dashboard/reports', icon: FileText, label: t.nav.reports },
+    { href: '/dashboard/settings', icon: Settings, label: t.nav.settings },
+  ]
 
   useEffect(() => {
+    if (userName) return
     const loadUser = async () => {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) return
-      setUserEmail(user.email || '')
       const { data } = await supabase.from('profiles').select('name').eq('id', user.id).single()
-      if (data) setUserName(data.name)
+      setUserProfile(data?.name || '', user.email || '')
     }
     loadUser()
-  }, [supabase])
+  }, [supabase, userName, setUserProfile])
 
   const handleSignOut = async () => {
     await supabase.auth.signOut()
-    toast.success('Signed out successfully')
+    toast.success(t.settings.signedOut)
     router.push('/login')
     router.refresh()
   }
@@ -61,7 +66,7 @@ export function Sidebar() {
         </div>
         <div>
           <h1 className="font-bold text-lg gradient-text leading-none">AmmaLedger</h1>
-          <p className="text-muted-foreground text-xs mt-0.5">Family Finance</p>
+          <p className="text-muted-foreground text-xs mt-0.5">{t.sidebar.tagline}</p>
         </div>
       </div>
 
@@ -100,7 +105,7 @@ export function Sidebar() {
           className="flex items-center gap-3 w-full px-4 py-3 rounded-xl text-sm font-medium text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-all duration-200"
         >
           <LogOut className="w-5 h-5" />
-          Sign Out
+          {t.settings.signOut}
         </button>
       </div>
     </aside>

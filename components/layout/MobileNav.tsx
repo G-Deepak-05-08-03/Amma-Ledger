@@ -3,18 +3,20 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { LayoutDashboard, IndianRupee, ShoppingCart, PiggyBank, FileText, Settings } from 'lucide-react'
-
-const navItems = [
-  { href: '/dashboard', icon: LayoutDashboard, label: 'Home' },
-  { href: '/dashboard/salary', icon: IndianRupee, label: 'Salary' },
-  { href: '/dashboard/expenses', icon: ShoppingCart, label: 'Expenses' },
-  { href: '/dashboard/funds', icon: PiggyBank, label: 'Funds' },
-  { href: '/dashboard/reports', icon: FileText, label: 'Reports' },
-  { href: '/dashboard/settings', icon: Settings, label: 'Settings' },
-]
+import { useTranslation } from '@/lib/i18n/useTranslation'
 
 export function MobileNav() {
   const pathname = usePathname()
+  const t = useTranslation()
+
+  const navItems = [
+    { href: '/dashboard', icon: LayoutDashboard, label: t.nav.home },
+    { href: '/dashboard/salary', icon: IndianRupee, label: t.nav.salary },
+    { href: '/dashboard/expenses', icon: ShoppingCart, label: t.nav.expenses },
+    { href: '/dashboard/funds', icon: PiggyBank, label: t.nav.funds },
+    { href: '/dashboard/reports', icon: FileText, label: t.nav.reports },
+    { href: '/dashboard/settings', icon: Settings, label: t.nav.settings },
+  ]
 
   return (
     <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 border-t border-border/50"
