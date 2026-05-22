@@ -81,35 +81,36 @@ export default function ReportsPage() {
     const { default: jsPDF } = await import('jspdf')
     const doc = new jsPDF()
     const monthLabel = `${MONTHS[selectedMonth - 1]} ${selectedYear}`
+    const ex = t.pages.reports.export
 
     doc.setFontSize(20)
     doc.setTextColor(249, 115, 22)
     doc.text('AmmaLedger', 20, 20)
     doc.setFontSize(14)
     doc.setTextColor(60, 60, 60)
-    doc.text(`Monthly Report — ${monthLabel}`, 20, 30)
+    doc.text(`${ex.monthlyReport} — ${monthLabel}`, 20, 30)
 
     doc.setFontSize(11)
     doc.setTextColor(40, 40, 40)
     let y = 45
-    doc.text('SUMMARY', 20, y); y += 8
+    doc.text(ex.summary, 20, y); y += 8
     const summaryLines = [
-      `Total Salary:      Rs. ${report.totalSalary.toLocaleString('en-IN')}`,
-      `Total Expenses:    Rs. ${report.totalExpenses.toLocaleString('en-IN')}`,
-      `Total Savings:     Rs. ${report.totalSavings.toLocaleString('en-IN')}`,
-      `Balance:           Rs. ${report.balance.toLocaleString('en-IN')}`,
+      `${ex.totalSalary}:    Rs. ${report.totalSalary.toLocaleString('en-IN')}`,
+      `${ex.totalExpenses}: Rs. ${report.totalExpenses.toLocaleString('en-IN')}`,
+      `${ex.totalSavings}:  Rs. ${report.totalSavings.toLocaleString('en-IN')}`,
+      `${ex.balance}:       Rs. ${report.balance.toLocaleString('en-IN')}`,
     ]
     summaryLines.forEach(line => { doc.text(line, 20, y); y += 7 })
 
     y += 5
-    doc.text('EXPENSES BY CATEGORY', 20, y); y += 8
+    doc.text(ex.expensesByCategory, 20, y); y += 8
     report.byCategory.forEach(c => {
-      doc.text(`${c.category.padEnd(20)} Rs. ${c.amount.toLocaleString('en-IN')} (${c.count} entries)`, 20, y)
+      doc.text(`${c.category.padEnd(20)} Rs. ${c.amount.toLocaleString('en-IN')} (${c.count} ${t.common.entries})`, 20, y)
       y += 7
     })
 
     y += 5
-    doc.text('EXPENSE DETAILS', 20, y); y += 8
+    doc.text(ex.expenseDetails, 20, y); y += 8
     report.expenses.forEach(e => {
       if (y > 270) { doc.addPage(); y = 20 }
       doc.text(`${formatDate(e.expense_date)}  ${e.category.padEnd(15)} Rs. ${e.amount.toLocaleString('en-IN')}${e.notes ? '  ' + e.notes : ''}`, 20, y)
@@ -124,36 +125,37 @@ export default function ReportsPage() {
     if (!report) return
     const { utils, writeFile } = await import('xlsx')
     const monthLabel = `${MONTHS[selectedMonth - 1]} ${selectedYear}`
+    const ex = t.pages.reports.export
 
     const summarySheet = utils.aoa_to_sheet([
-      ['AmmaLedger Monthly Report', monthLabel],
+      [`AmmaLedger ${ex.monthlyReport}`, monthLabel],
       [],
-      ['Total Salary', report.totalSalary],
-      ['Total Expenses', report.totalExpenses],
-      ['Total Savings', report.totalSavings],
-      ['Balance', report.balance],
+      [ex.totalSalary, report.totalSalary],
+      [ex.totalExpenses, report.totalExpenses],
+      [ex.totalSavings, report.totalSavings],
+      [ex.balance, report.balance],
     ])
 
     const expenseRows = report.expenses.map(e => ({
-      Date: formatDate(e.expense_date),
-      Category: e.category,
-      Amount: e.amount,
-      Notes: e.notes || '',
+      [ex.colDate]: formatDate(e.expense_date),
+      [ex.colCategory]: e.category,
+      [ex.colAmount]: e.amount,
+      [ex.colNotes]: e.notes || '',
     }))
     const expenseSheet = utils.json_to_sheet(expenseRows)
 
     const salaryRows = report.salaries.map(s => ({
-      Date: formatDate(s.received_date),
-      Source: s.source,
-      Amount: s.amount,
-      Notes: s.notes || '',
+      [ex.colDate]: formatDate(s.received_date),
+      [ex.colSource]: s.source,
+      [ex.colAmount]: s.amount,
+      [ex.colNotes]: s.notes || '',
     }))
     const salarySheet = utils.json_to_sheet(salaryRows)
 
     const wb = utils.book_new()
-    utils.book_append_sheet(wb, summarySheet, 'Summary')
-    utils.book_append_sheet(wb, expenseSheet, 'Expenses')
-    utils.book_append_sheet(wb, salarySheet, 'Salary')
+    utils.book_append_sheet(wb, summarySheet, ex.sheetSummary)
+    utils.book_append_sheet(wb, expenseSheet, ex.sheetExpenses)
+    utils.book_append_sheet(wb, salarySheet, ex.sheetSalary)
     writeFile(wb, `AmmaLedger-${monthLabel.replace(' ', '-')}.xlsx`)
     toast.success(t.pages.reports.excelDownloaded)
   }
