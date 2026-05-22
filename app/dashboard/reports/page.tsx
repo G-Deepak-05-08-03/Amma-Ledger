@@ -9,6 +9,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { FilterDropdown, FilterDropdownItem } from '@/components/ui/filter-dropdown'
 import { formatCurrency, formatDate, MONTHS } from '@/lib/utils'
 import { CATEGORY_COLORS, SAVINGS_ALLOCATION_KEYWORDS, type Expense, type Salary } from '@/types'
+import { useTranslation } from '@/lib/i18n/useTranslation'
 
 interface ReportData {
   salaries: Salary[]
@@ -22,6 +23,7 @@ interface ReportData {
 
 export default function ReportsPage() {
   const supabase = createClient()
+  const t = useTranslation()
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1)
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear())
   const [report, setReport] = useState<ReportData | null>(null)
@@ -62,15 +64,7 @@ export default function ReportsPage() {
       .map(([category, data]) => ({ category, ...data }))
       .sort((a, b) => b.amount - a.amount)
 
-    setReport({
-      salaries,
-      expenses,
-      totalSalary,
-      totalExpenses,
-      totalSavings,
-      balance: totalSalary - totalExpenses,
-      byCategory,
-    })
+    setReport({ salaries, expenses, totalSalary, totalExpenses, totalSavings, balance: totalSalary - totalExpenses, byCategory })
     setLoading(false)
   }, [selectedMonth, selectedYear, supabase])
 
@@ -79,14 +73,8 @@ export default function ReportsPage() {
     generateReport()
   }, [selectedMonth, selectedYear, generateReport])
 
-  const handleMonthChange = (month: number) => {
-    hasUserSelected.current = true
-    setSelectedMonth(month)
-  }
-  const handleYearChange = (year: number) => {
-    hasUserSelected.current = true
-    setSelectedYear(year)
-  }
+  const handleMonthChange = (month: number) => { hasUserSelected.current = true; setSelectedMonth(month) }
+  const handleYearChange = (year: number) => { hasUserSelected.current = true; setSelectedYear(year) }
 
   const exportPDF = async () => {
     if (!report) return
@@ -129,7 +117,7 @@ export default function ReportsPage() {
     })
 
     doc.save(`AmmaLedger-${monthLabel.replace(' ', '-')}.pdf`)
-    toast.success('PDF downloaded!')
+    toast.success(t.pages.reports.pdfDownloaded)
   }
 
   const exportExcel = async () => {
@@ -167,14 +155,14 @@ export default function ReportsPage() {
     utils.book_append_sheet(wb, expenseSheet, 'Expenses')
     utils.book_append_sheet(wb, salarySheet, 'Salary')
     writeFile(wb, `AmmaLedger-${monthLabel.replace(' ', '-')}.xlsx`)
-    toast.success('Excel file downloaded!')
+    toast.success(t.pages.reports.excelDownloaded)
   }
 
   return (
     <div className="space-y-6 animate-fade-in-up">
       <div>
-        <h1 className="text-2xl md:text-3xl font-bold">Reports</h1>
-        <p className="text-muted-foreground text-sm mt-1">Generate and download monthly financial reports</p>
+        <h1 className="text-2xl md:text-3xl font-bold">{t.pages.reports.title}</h1>
+        <p className="text-muted-foreground text-sm mt-1">{t.pages.reports.subtitle}</p>
       </div>
 
       <div className="glass-card rounded-2xl p-5 flex flex-wrap items-center gap-4">
@@ -201,7 +189,7 @@ export default function ReportsPage() {
           style={{ background: 'linear-gradient(135deg, hsl(30,95%,55%), hsl(45,100%,65%))' }}
         >
           <FileText className="w-4 h-4 mr-2" />
-          {loading ? 'Generating...' : 'Generate Report'}
+          {loading ? t.pages.reports.generatingBtn : t.pages.reports.generateBtn}
         </Button>
 
         {report && (
@@ -225,14 +213,14 @@ export default function ReportsPage() {
       {report && !loading && (
         <div className="space-y-6">
           <p className="text-sm text-muted-foreground -mt-2">
-            Showing report for <strong className="text-foreground">{MONTHS[selectedMonth - 1]} {selectedYear}</strong>
+            {t.pages.reports.showingFor} <strong className="text-foreground">{MONTHS[selectedMonth - 1]} {selectedYear}</strong>
           </p>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
             {[
-              { label: 'Total Salary', value: report.totalSalary, color: 'text-orange-400' },
-              { label: 'Total Expenses', value: report.totalExpenses, color: 'text-red-400' },
-              { label: 'Total Savings', value: report.totalSavings, color: 'text-emerald-400' },
-              { label: 'Balance', value: report.balance, color: report.balance >= 0 ? 'text-cyan-400' : 'text-red-400' },
+              { label: t.pages.reports.totalSalary, value: report.totalSalary, color: 'text-orange-400' },
+              { label: t.pages.reports.totalExpenses, value: report.totalExpenses, color: 'text-red-400' },
+              { label: t.pages.reports.totalSavings, value: report.totalSavings, color: 'text-emerald-400' },
+              { label: t.pages.reports.balance, value: report.balance, color: report.balance >= 0 ? 'text-cyan-400' : 'text-red-400' },
             ].map(({ label, value, color }) => (
               <div key={label} className="glass-card rounded-2xl p-5">
                 <p className="text-muted-foreground text-sm">{label}</p>
@@ -242,7 +230,7 @@ export default function ReportsPage() {
           </div>
 
           <div className="glass-card rounded-2xl p-5">
-            <h2 className="font-semibold text-base mb-4">Expense by Category</h2>
+            <h2 className="font-semibold text-base mb-4">{t.pages.reports.expenseByCategory}</h2>
             <div className="space-y-3">
               {report.byCategory.map(cat => {
                 const pct = report.totalExpenses > 0 ? (cat.amount / report.totalExpenses) * 100 : 0
@@ -253,7 +241,7 @@ export default function ReportsPage() {
                       <div className="flex items-center gap-2">
                         <span className="w-2.5 h-2.5 rounded-full" style={{ background: color }} />
                         <span className="text-sm">{cat.category}</span>
-                        <span className="text-xs text-muted-foreground">({cat.count} entries)</span>
+                        <span className="text-xs text-muted-foreground">({cat.count} {t.common.entries})</span>
                       </div>
                       <span className="text-sm font-semibold">{formatCurrency(cat.amount)}</span>
                     </div>
@@ -269,7 +257,7 @@ export default function ReportsPage() {
 
           {report.salaries.length > 0 && (
             <div className="glass-card rounded-2xl p-5">
-              <h2 className="font-semibold text-base mb-4">Salary Entries</h2>
+              <h2 className="font-semibold text-base mb-4">{t.pages.reports.salaryEntries}</h2>
               <div className="space-y-3">
                 {report.salaries.map(s => (
                   <div key={s.id} className="flex items-center justify-between py-2 border-b border-border/40 last:border-0">
@@ -286,7 +274,9 @@ export default function ReportsPage() {
 
           {report.expenses.length > 0 && (
             <div className="glass-card rounded-2xl p-5">
-              <h2 className="font-semibold text-base mb-4">All Expenses ({report.expenses.length})</h2>
+              <h2 className="font-semibold text-base mb-4">
+                {t.pages.reports.allExpenses} ({report.expenses.length})
+              </h2>
               <div className="space-y-2">
                 {report.expenses.map(e => (
                   <div key={e.id} className="flex items-center gap-4 py-2 border-b border-border/40 last:border-0">
@@ -312,7 +302,7 @@ export default function ReportsPage() {
       {!report && !loading && (
         <div className="glass-card rounded-2xl p-16 text-center">
           <FileText className="w-14 h-14 text-muted-foreground/30 mx-auto mb-4" />
-          <p className="text-muted-foreground">Select a month and click Generate Report</p>
+          <p className="text-muted-foreground">{t.pages.reports.empty}</p>
         </div>
       )}
     </div>
