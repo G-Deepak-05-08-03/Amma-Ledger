@@ -12,24 +12,17 @@ import { format, startOfMonth, endOfMonth, subMonths } from 'date-fns'
 import { TrendingUp, Loader2 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import type { Expense, Salary } from '@/types'
+import { useAppStore } from '@/store/useStore'
+import { useTranslation } from '@/lib/i18n/useTranslation'
 
 export default function DashboardPage() {
   const supabase = createClient()
+  const t = useTranslation()
   const [loading, setLoading] = useState(true)
-  const [userName, setUserName] = useState('')
+  const userName = useAppStore((s) => s.userName)
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1)
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear())
   const years = Array.from({ length: 3 }, (_, i) => new Date().getFullYear() - i)
-
-  useEffect(() => {
-    const loadUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) return
-      const { data } = await supabase.from('profiles').select('name').eq('id', user.id).single()
-      if (data) setUserName(data.name)
-    }
-    loadUser()
-  }, [supabase])
   const [data, setData] = useState<{
     totalSalary: number
     totalExpenses: number
@@ -146,10 +139,12 @@ export default function DashboardPage() {
       <div className="flex items-center justify-between gap-3 flex-wrap">
         <div>
           <h1 className="text-2xl md:text-3xl font-bold">
-            {userName ? `Welcome, ${userName.split(' ')[0]}` : 'Dashboard'}
+            {userName
+              ? t.dashboard.welcome.replace('{name}', userName.split(' ')[0])
+              : t.dashboard.title}
           </h1>
           <p className="text-muted-foreground text-sm mt-1">
-            {MONTHS[selectedMonth - 1]} {selectedYear} overview
+            {t.dashboard.overview.replace('{month}', MONTHS[selectedMonth - 1]).replace('{year}', String(selectedYear))}
           </p>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
@@ -169,7 +164,7 @@ export default function DashboardPage() {
           </FilterDropdown>
           <div className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-xl bg-muted/40 text-sm text-muted-foreground">
             <TrendingUp className="w-4 h-4 text-emerald-400" />
-            <span>Savings rate: <strong className="text-emerald-400">
+            <span>{t.dashboard.savingsRate}: <strong className="text-emerald-400">
               {data.totalSalary > 0 ? ((data.totalSavings / data.totalSalary) * 100).toFixed(0) : 0}%
             </strong></span>
           </div>
@@ -187,11 +182,11 @@ export default function DashboardPage() {
       {/* Charts Row */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="glass-card rounded-2xl p-5">
-          <h2 className="font-semibold text-base mb-4">Expense Breakdown</h2>
+          <h2 className="font-semibold text-base mb-4">{t.dashboard.expenseBreakdown}</h2>
           <ExpensePieChart data={data.expensesByCategory} />
         </div>
         <div className="glass-card rounded-2xl p-5">
-          <h2 className="font-semibold text-base mb-4">6-Month Trend</h2>
+          <h2 className="font-semibold text-base mb-4">{t.dashboard.sixMonthTrend}</h2>
           <MonthlyTrendChart data={data.monthlyTrend} />
         </div>
       </div>
@@ -199,9 +194,9 @@ export default function DashboardPage() {
       {/* Allocation Breakdown + Recent Expenses */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="glass-card rounded-2xl p-5">
-          <h2 className="font-semibold text-base mb-4">This Month&apos;s Allocation</h2>
+          <h2 className="font-semibold text-base mb-4">{t.dashboard.thisMonthAllocation}</h2>
           {data.salaries.length === 0 ? (
-            <p className="text-muted-foreground text-sm">No salary recorded this month</p>
+            <p className="text-muted-foreground text-sm">{t.dashboard.noSalary}</p>
           ) : (
             <div className="space-y-3">
               {data.salaries.flatMap((s: { allocations?: { id: string; allocated_to: string; amount: number }[] }) => s.allocations || []).map((a: { id: string; allocated_to: string; amount: number }) => (
@@ -215,7 +210,7 @@ export default function DashboardPage() {
         </div>
 
         <div className="glass-card rounded-2xl p-5">
-          <h2 className="font-semibold text-base mb-4">Recent Expenses</h2>
+          <h2 className="font-semibold text-base mb-4">{t.dashboard.recentExpenses}</h2>
           <RecentExpenses expenses={data.recentExpenses} />
         </div>
       </div>

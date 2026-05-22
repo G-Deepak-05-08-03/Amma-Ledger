@@ -5,6 +5,7 @@ import { PiggyBank, TrendingUp, TrendingDown, Wallet, ArrowDownCircle, ArrowUpCi
 import { createClient } from '@/lib/supabase/client'
 import { formatCurrency, formatDate } from '@/lib/utils'
 import type { FundBalance } from '@/types'
+import { useTranslation } from '@/lib/i18n/useTranslation'
 
 interface FundTransaction {
   date: string
@@ -16,6 +17,7 @@ interface FundTransaction {
 
 export default function FundsPage() {
   const supabase = createClient()
+  const t = useTranslation()
   const [funds, setFunds] = useState<FundBalance[]>([])
   const [transactions, setTransactions] = useState<FundTransaction[]>([])
   const [selectedFund, setSelectedFund] = useState<string | null>(null)
@@ -36,7 +38,6 @@ export default function FundsPage() {
         .order('expense_date', { ascending: false }),
     ])
 
-    // Build fund balances
     const allocated: Record<string, number> = {}
     const spent: Record<string, number> = {}
 
@@ -56,7 +57,6 @@ export default function FundsPage() {
       available: allocated[name] - (spent[name] || 0),
     })).sort((a, b) => b.available - a.available)
 
-    // Build transaction history
     const txns: FundTransaction[] = []
     ;(allocations || []).forEach((a: {
       allocated_to: string;
@@ -66,7 +66,7 @@ export default function FundsPage() {
     }) => {
       txns.push({
         date: a.salaries?.received_date || a.created_at,
-        description: `Salary allocation — ${a.salaries?.source || 'Salary'}`,
+        description: `${t.pages.funds.salaryAllocation} — ${a.salaries?.source || 'Salary'}`,
         amount: a.amount,
         type: 'credit',
         fund: a.allocated_to,
@@ -94,13 +94,13 @@ export default function FundsPage() {
     setFunds(result)
     setTransactions(txns)
     setLoading(false)
-  }, [supabase])
+  }, [supabase, t])
 
   // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { loadData() }, [loadData])
 
   const filteredTxns = selectedFund
-    ? transactions.filter(t => t.fund === selectedFund)
+    ? transactions.filter(tx => tx.fund === selectedFund)
     : transactions
 
   const totalAvailable = funds.reduce((s, f) => s + Math.max(f.available, 0), 0)
@@ -110,16 +110,16 @@ export default function FundsPage() {
   return (
     <div className="space-y-6 animate-fade-in-up">
       <div>
-        <h1 className="text-2xl md:text-3xl font-bold">Funds</h1>
-        <p className="text-muted-foreground text-sm mt-1">Track your allocation buckets and spending from each fund</p>
+        <h1 className="text-2xl md:text-3xl font-bold">{t.pages.funds.title}</h1>
+        <p className="text-muted-foreground text-sm mt-1">{t.pages.funds.subtitle}</p>
       </div>
 
       {/* Summary cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         {[
-          { label: 'Total Allocated', value: totalAllocated, icon: TrendingUp, color: 'text-orange-400', gradient: 'hsl(30,95%,55%), hsl(45,100%,65%)' },
-          { label: 'Spent from Funds', value: totalSpent, icon: TrendingDown, color: 'text-red-400', gradient: 'hsl(0,84%,60%), hsl(15,90%,55%)' },
-          { label: 'Total Available', value: totalAvailable, icon: PiggyBank, color: 'text-emerald-400', gradient: 'hsl(160,84%,39%), hsl(175,80%,45%)' },
+          { label: t.pages.funds.totalAllocated, value: totalAllocated, icon: TrendingUp, color: 'text-orange-400', gradient: 'hsl(30,95%,55%), hsl(45,100%,65%)' },
+          { label: t.pages.funds.spentFromFunds, value: totalSpent, icon: TrendingDown, color: 'text-red-400', gradient: 'hsl(0,84%,60%), hsl(15,90%,55%)' },
+          { label: t.pages.funds.totalAvailable, value: totalAvailable, icon: PiggyBank, color: 'text-emerald-400', gradient: 'hsl(160,84%,39%), hsl(175,80%,45%)' },
         ].map(({ label, value, icon: Icon, color, gradient }) => (
           <div key={label} className="glass-card rounded-2xl p-4 relative overflow-hidden">
             <div className="absolute inset-x-0 top-0 h-0.5 rounded-t-2xl"
@@ -148,12 +148,12 @@ export default function FundsPage() {
       ) : funds.length === 0 ? (
         <div className="glass-card rounded-2xl p-16 text-center">
           <PiggyBank className="w-14 h-14 text-muted-foreground/30 mx-auto mb-4" />
-          <p className="text-muted-foreground">No fund allocations yet.</p>
-          <p className="text-xs text-muted-foreground mt-2">Add salary entries with allocations to start tracking funds.</p>
+          <p className="text-muted-foreground">{t.pages.funds.noFunds}</p>
+          <p className="text-xs text-muted-foreground mt-2">{t.pages.funds.noFundsHint}</p>
         </div>
       ) : (
         <div className="space-y-3">
-          <h2 className="font-semibold text-base">Fund Balances</h2>
+          <h2 className="font-semibold text-base">{t.pages.funds.fundBalances}</h2>
           {funds.map(fund => {
             const usedPct = fund.total_allocated > 0
               ? Math.min((fund.total_spent / fund.total_allocated) * 100, 100)
@@ -180,7 +180,9 @@ export default function FundsPage() {
                     <div>
                       <p className="font-semibold">{fund.name}</p>
                       <p className="text-xs text-muted-foreground">
-                        {fund.total_spent > 0 ? `${formatCurrency(fund.total_spent)} spent` : 'No withdrawals yet'}
+                        {fund.total_spent > 0
+                          ? `${formatCurrency(fund.total_spent)} ${t.pages.funds.available === t.pages.funds.available ? t.common.spent.toLowerCase() : t.common.spent}`
+                          : t.pages.funds.noWithdrawals}
                       </p>
                     </div>
                   </div>
@@ -188,11 +190,10 @@ export default function FundsPage() {
                     <p className={`text-xl font-bold ${isOverdrawn ? 'text-red-400' : 'text-emerald-400'}`}>
                       {formatCurrency(fund.available)}
                     </p>
-                    <p className="text-xs text-muted-foreground">available</p>
+                    <p className="text-xs text-muted-foreground">{t.pages.funds.available}</p>
                   </div>
                 </div>
 
-                {/* Progress bar */}
                 <div className="h-2 bg-muted/50 rounded-full overflow-hidden">
                   <div
                     className="h-full rounded-full transition-all duration-700"
@@ -206,8 +207,8 @@ export default function FundsPage() {
                 </div>
 
                 <div className="flex justify-between text-xs text-muted-foreground mt-2">
-                  <span>Total added: {formatCurrency(fund.total_allocated)}</span>
-                  <span>{Math.round(usedPct)}% used</span>
+                  <span>{t.pages.funds.totalAdded}: {formatCurrency(fund.total_allocated)}</span>
+                  <span>{Math.round(usedPct)}{t.pages.funds.usedPct}</span>
                 </div>
               </button>
             )
@@ -220,20 +221,22 @@ export default function FundsPage() {
         <div className="glass-card rounded-2xl p-5">
           <div className="flex items-center justify-between mb-4">
             <h2 className="font-semibold">
-              {selectedFund ? `${selectedFund} — History` : 'All Fund Transactions'}
+              {selectedFund
+                ? `${selectedFund} — ${t.pages.funds.history}`
+                : t.pages.funds.allTransactions}
             </h2>
             {selectedFund && (
               <button
                 onClick={() => setSelectedFund(null)}
                 className="text-xs text-primary hover:underline"
               >
-                Show all
+                {t.pages.funds.showAll}
               </button>
             )}
           </div>
 
           {filteredTxns.length === 0 ? (
-            <p className="text-sm text-muted-foreground text-center py-6">No transactions for this fund yet.</p>
+            <p className="text-sm text-muted-foreground text-center py-6">{t.pages.funds.noTransactions}</p>
           ) : (
             <div className="space-y-2">
               {filteredTxns.map((txn, i) => (

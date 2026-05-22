@@ -21,9 +21,11 @@ import {
 import { ExpenseForm } from '@/components/expenses/ExpenseForm'
 import { formatCurrency, formatDate, MONTHS } from '@/lib/utils'
 import { EXPENSE_CATEGORIES, CATEGORY_COLORS, CATEGORY_ICONS, type Expense } from '@/types'
+import { useTranslation } from '@/lib/i18n/useTranslation'
 
 export default function ExpensesPage() {
   const supabase = createClient()
+  const t = useTranslation()
   const [expenses, setExpenses] = useState<Expense[]>([])
   const [loading, setLoading] = useState(true)
   const [formOpen, setFormOpen] = useState(false)
@@ -52,10 +54,10 @@ export default function ExpensesPage() {
     }
 
     const { data, error } = await query
-    if (error) toast.error('Failed to load expenses')
+    if (error) toast.error(t.pages.expenses.toastLoadFail)
     else setExpenses(data || [])
     setLoading(false)
-  }, [selectedMonth, selectedYear, selectedCategory, supabase])
+  }, [selectedMonth, selectedYear, selectedCategory, supabase, t])
 
   // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { fetchExpenses() }, [fetchExpenses])
@@ -64,8 +66,8 @@ export default function ExpensesPage() {
     if (!deleteId) return
     setDeleteLoading(true)
     const { error } = await supabase.from('expenses').delete().eq('id', deleteId)
-    if (error) toast.error('Failed to delete')
-    else { toast.success('Expense deleted'); fetchExpenses() }
+    if (error) toast.error(t.pages.expenses.toastDeleteFail)
+    else { toast.success(t.pages.expenses.toastDeleted); fetchExpenses() }
     setDeleteLoading(false)
     setDeleteId(null)
   }
@@ -82,15 +84,15 @@ export default function ExpensesPage() {
     <div className="space-y-6 animate-fade-in-up">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl md:text-3xl font-bold">Expenses</h1>
-          <p className="text-muted-foreground text-sm mt-1">Track and categorize household expenses</p>
+          <h1 className="text-2xl md:text-3xl font-bold">{t.pages.expenses.title}</h1>
+          <p className="text-muted-foreground text-sm mt-1">{t.pages.expenses.subtitle}</p>
         </div>
         <Button
           onClick={() => { setEditData(null); setFormOpen(true) }}
           className="h-11 font-semibold"
           style={{ background: 'linear-gradient(135deg, hsl(187,76%,42%), hsl(200,84%,55%))' }}
         >
-          <Plus className="w-5 h-5 mr-2" /> Add Expense
+          <Plus className="w-5 h-5 mr-2" /> {t.pages.expenses.addBtn}
         </Button>
       </div>
 
@@ -114,7 +116,7 @@ export default function ExpensesPage() {
         <div className="relative flex-1 min-w-[200px]">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input
-            placeholder="Search expenses..."
+            placeholder={t.pages.expenses.searchPlaceholder}
             className="h-10 pl-9 bg-muted/50"
             value={search}
             onChange={e => setSearch(e.target.value)}
@@ -123,7 +125,7 @@ export default function ExpensesPage() {
 
         {totalExpenses > 0 && (
           <div className="text-sm whitespace-nowrap">
-            <span className="text-muted-foreground">Total: </span>
+            <span className="text-muted-foreground">{t.common.total}: </span>
             <span className="font-bold text-red-400">{formatCurrency(totalExpenses)}</span>
           </div>
         )}
@@ -137,7 +139,7 @@ export default function ExpensesPage() {
             selectedCategory === 'All' ? 'bg-primary text-primary-foreground' : 'bg-muted/60 text-muted-foreground hover:text-foreground'
           }`}
         >
-          All
+          {t.common.all}
         </button>
         {EXPENSE_CATEGORIES.map(cat => (
           <button
@@ -162,13 +164,13 @@ export default function ExpensesPage() {
       ) : filtered.length === 0 ? (
         <div className="glass-card rounded-2xl p-12 text-center">
           <ShoppingCart className="w-12 h-12 text-muted-foreground/40 mx-auto mb-3" />
-          <p className="text-muted-foreground">No expenses found</p>
+          <p className="text-muted-foreground">{t.pages.expenses.empty}</p>
           <Button
             onClick={() => { setEditData(null); setFormOpen(true) }}
             className="mt-4 h-10"
             style={{ background: 'linear-gradient(135deg, hsl(187,76%,42%), hsl(200,84%,55%))' }}
           >
-            <Plus className="w-4 h-4 mr-2" /> Add First Expense
+            <Plus className="w-4 h-4 mr-2" /> {t.pages.expenses.addFirstBtn}
           </Button>
         </div>
       ) : (
@@ -228,19 +230,17 @@ export default function ExpensesPage() {
       <AlertDialog open={!!deleteId} onOpenChange={(open) => { if (!open) setDeleteId(null) }}>
         <AlertDialogContent className="bg-card border-border">
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete expense?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This action cannot be undone.
-            </AlertDialogDescription>
+            <AlertDialogTitle>{t.pages.expenses.deleteTitle}</AlertDialogTitle>
+            <AlertDialogDescription>{t.pages.expenses.deleteDesc}</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={deleteLoading}>Cancel</AlertDialogCancel>
+            <AlertDialogCancel disabled={deleteLoading}>{t.common.cancel}</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDelete}
               disabled={deleteLoading}
               className="bg-destructive hover:bg-destructive/90"
             >
-              {deleteLoading ? 'Deleting...' : 'Delete'}
+              {deleteLoading ? t.common.deleting : t.common.delete}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

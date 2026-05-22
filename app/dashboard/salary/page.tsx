@@ -21,9 +21,11 @@ import {
 import { SalaryForm } from '@/components/salary/SalaryForm'
 import { formatCurrency, formatDate, MONTHS } from '@/lib/utils'
 import type { Salary } from '@/types'
+import { useTranslation } from '@/lib/i18n/useTranslation'
 
 export default function SalaryPage() {
   const supabase = createClient()
+  const t = useTranslation()
   const [salaries, setSalaries] = useState<Salary[]>([])
   const [loading, setLoading] = useState(true)
   const [formOpen, setFormOpen] = useState(false)
@@ -43,10 +45,10 @@ export default function SalaryPage() {
       .gte('received_date', start)
       .lte('received_date', end)
       .order('received_date', { ascending: false })
-    if (error) toast.error('Failed to load salaries')
+    if (error) toast.error(t.pages.salary.toastLoadFail)
     else setSalaries(data || [])
     setLoading(false)
-  }, [selectedMonth, selectedYear, supabase])
+  }, [selectedMonth, selectedYear, supabase, t])
 
   // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { fetchSalaries() }, [fetchSalaries])
@@ -55,8 +57,8 @@ export default function SalaryPage() {
     if (!deleteId) return
     setDeleteLoading(true)
     const { error } = await supabase.from('salaries').delete().eq('id', deleteId)
-    if (error) toast.error('Failed to delete')
-    else { toast.success('Salary deleted'); fetchSalaries() }
+    if (error) toast.error(t.pages.salary.toastDeleteFail)
+    else { toast.success(t.pages.salary.toastDeleted); fetchSalaries() }
     setDeleteLoading(false)
     setDeleteId(null)
   }
@@ -68,15 +70,15 @@ export default function SalaryPage() {
     <div className="space-y-6 animate-fade-in-up">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl md:text-3xl font-bold">Salary</h1>
-          <p className="text-muted-foreground text-sm mt-1">Track monthly salary and allocations</p>
+          <h1 className="text-2xl md:text-3xl font-bold">{t.pages.salary.title}</h1>
+          <p className="text-muted-foreground text-sm mt-1">{t.pages.salary.subtitle}</p>
         </div>
         <Button
           onClick={() => { setEditData(null); setFormOpen(true) }}
           className="h-11 font-semibold glow-saffron"
           style={{ background: 'linear-gradient(135deg, hsl(30,95%,55%), hsl(45,100%,65%))' }}
         >
-          <Plus className="w-5 h-5 mr-2" /> Add Salary
+          <Plus className="w-5 h-5 mr-2" /> {t.pages.salary.addBtn}
         </Button>
       </div>
 
@@ -99,7 +101,7 @@ export default function SalaryPage() {
 
         {totalSalary > 0 && (
           <div className="ml-auto text-sm">
-            <span className="text-muted-foreground">Total: </span>
+            <span className="text-muted-foreground">{t.common.total}: </span>
             <span className="font-bold text-orange-400">{formatCurrency(totalSalary)}</span>
           </div>
         )}
@@ -112,13 +114,13 @@ export default function SalaryPage() {
       ) : salaries.length === 0 ? (
         <div className="glass-card rounded-2xl p-12 text-center">
           <IndianRupee className="w-12 h-12 text-muted-foreground/40 mx-auto mb-3" />
-          <p className="text-muted-foreground">No salary entries for this month</p>
+          <p className="text-muted-foreground">{t.pages.salary.empty}</p>
           <Button
             onClick={() => { setEditData(null); setFormOpen(true) }}
             className="mt-4 h-10"
             style={{ background: 'linear-gradient(135deg, hsl(30,95%,55%), hsl(45,100%,65%))' }}
           >
-            <Plus className="w-4 h-4 mr-2" /> Add First Salary
+            <Plus className="w-4 h-4 mr-2" /> {t.pages.salary.addFirstBtn}
           </Button>
         </div>
       ) : (
@@ -151,7 +153,9 @@ export default function SalaryPage() {
 
               {(salary.allocations || []).length > 0 && (
                 <div className="border-t border-border/40 pt-3">
-                  <p className="text-xs text-muted-foreground mb-2 font-medium uppercase tracking-wide">Allocations</p>
+                  <p className="text-xs text-muted-foreground mb-2 font-medium uppercase tracking-wide">
+                    {t.pages.salary.allocations}
+                  </p>
                   <div className="flex flex-wrap gap-2">
                     {(salary.allocations || []).map((a: { id: string; allocated_to: string; amount: number }) => (
                       <Badge key={a.id} variant="secondary" className="text-xs py-1 px-3 bg-muted/60">
@@ -176,19 +180,17 @@ export default function SalaryPage() {
       <AlertDialog open={!!deleteId} onOpenChange={(open) => { if (!open) setDeleteId(null) }}>
         <AlertDialogContent className="bg-card border-border">
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete salary entry?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This will also remove all allocations linked to this salary entry. Cannot be undone.
-            </AlertDialogDescription>
+            <AlertDialogTitle>{t.pages.salary.deleteTitle}</AlertDialogTitle>
+            <AlertDialogDescription>{t.pages.salary.deleteDesc}</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={deleteLoading}>Cancel</AlertDialogCancel>
+            <AlertDialogCancel disabled={deleteLoading}>{t.common.cancel}</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDelete}
               disabled={deleteLoading}
               className="bg-destructive hover:bg-destructive/90"
             >
-              {deleteLoading ? 'Deleting...' : 'Delete'}
+              {deleteLoading ? t.common.deleting : t.common.delete}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
